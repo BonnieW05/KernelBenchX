@@ -1,11 +1,13 @@
 # KernelBench_X
 
-KernelBench\_X is a reproducible evaluation harness for **Triton kernel code generation**. It measures:
+[KernelBench\_X](https://arxiv.org/abs/2605.04956) is a reproducible evaluation harness for **Triton kernel code generation**. It measures:
 
-- **Buildability (Call)**: can the submitted code compile and run?
-- **Numerical correctness (Exe)**: does it match a reference implementation under a deterministic test suite?
+- **Buildability (Call)**: Can the submitted code compile and run?
+- **Numerical correctness (Exe)**: Does it match a reference implementation under a deterministic test suite?
 - **Efficiency (Perf)**: runtime (ms), throughput (TFLOPS), memory bandwidth (GB/s), and speedup vs. a GPU-matched golden reference.
 - **Others**: lightweight code quality signals (e.g., maintainability index via `radon`) are also reported.
+
+**Paper:** https://arxiv.org/pdf/2605.04956
 
 ## Acknowledgment
 
@@ -16,7 +18,7 @@ KernelBench_X builds upon prior efforts in Triton kernel benchmarking, particula
 
 We thank the authors of these projects for providing foundational resources.
 
-## Setup & run
+## Setup & Run
 
 ```bash
 pip install -r requirements.txt
@@ -62,7 +64,7 @@ The `--source` path may be:
 **Kernel entry contract.** To ensure the submission is executable, define a **top-level** callable named either `kernel_function` or the target task stem (for example, `attention` for `attention.py`).
 
 
-## Golden references
+## GPU-Specific Golden Timing Baselines
 
 Golden timing JSONs are GPU-specific, stored under `metrics/golden_results/<machine>/`. Resolution precedence: `KERNELBENCHX_GOLDEN_RESULTS_DIR` (explicit override) → `KERNELBENCHX_GOLDEN_MACHINE` (named subfolder) → default `5090`.
 
@@ -86,4 +88,15 @@ KernelBench_X/
 ├── metrics/                  # golden references + perf scripts
 ├── scripts/                  # user-facing entrypoints
 └── utils/                    # shared helpers
+```
+
+## Citation
+**If you use this code or find our work valuable, please cite:**
+```
+@article{wang2026kernelbenchx,
+  title={KernelBench-X: A Comprehensive Benchmark for Evaluating LLM-Generated GPU Kernels}, 
+  author={Wang, Han and Zhang, Jintao and Jiang, Kai and Wang, Haoxu and Chen, Jianfei and Zhu, Jun},
+  journal={arXiv preprint arXiv:2605.04956},
+  year={2026}
+}
 ```
