@@ -13,7 +13,18 @@ def precision_metric(output, reference, round_num=None):
     x = output.float()
     ref = reference.float()
 
-    cosine = torch.nn.functional.cosine_similarity(x.reshape(1, -1), ref.reshape(1, -1)).item()
+    # Cosine similarity is undefined for all-zero vectors. In such cases, treat
+    # (all-zero, all-zero) as perfect match (cosine=1.0); otherwise cosine=0.0.
+    x_flat = x.reshape(-1)
+    ref_flat = ref.reshape(-1)
+    x_norm = torch.linalg.vector_norm(x_flat).item()
+    ref_norm = torch.linalg.vector_norm(ref_flat).item()
+    if x_norm < 1e-12 and ref_norm < 1e-12:
+        cosine = 1.0
+    elif x_norm < 1e-12 or ref_norm < 1e-12:
+        cosine = 0.0
+    else:
+        cosine = torch.nn.functional.cosine_similarity(x.reshape(1, -1), ref.reshape(1, -1)).item()
     denom = torch.abs(ref).sum().clamp_min(1e-12)
     l1_rel = (torch.abs(x - ref).sum() / denom).item()
     rmse = torch.sqrt(torch.mean((x - ref) ** 2)).item()

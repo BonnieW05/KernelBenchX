@@ -5,7 +5,11 @@ import subprocess
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import sys
 import re
-from code_quality import analyze_code_quality
+try:
+    from code_quality import analyze_code_quality
+    _QUALITY_AVAILABLE = True
+except Exception:
+    _QUALITY_AVAILABLE = False
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../utils"))
 from quantization_checker import check_quantization_task
@@ -198,7 +202,7 @@ def run_script_on_gpu(script_content_tuple, test_content, file_name, tmp_dir, gp
         print(result.stderr, flush=True)
 
         stderr = result.stderr[:2000] if result.stderr else ""
-        quality = analyze_code_quality(temp_path) if success else {}
+        quality = analyze_code_quality(temp_path) if (success and _QUALITY_AVAILABLE) else {}
         return success, file_name, script_content, stderr, quality
 
     finally:

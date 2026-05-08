@@ -174,3 +174,4 @@ cython_debug/
 
 # Project-specific ignores
 query/
+examples/out

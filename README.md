@@ -20,6 +20,9 @@ We thank the authors of these projects for providing foundational resources.
 
 ## Setup & Run
 
+> **Recommended (no sudo):** `conda create -n kbx python=3.11 -y && conda activate kbx`  
+> System Python users may need: `sudo apt install python3.10-dev`
+
 ```bash
 pip install -r requirements.txt
 export PYTHONPATH="$(pwd)/data:${PYTHONPATH}"
@@ -40,6 +43,12 @@ bash scripts/run_eval_from_files.sh ./generated/kernels/ ./out_run 0,1
 ```
 
 Outputs land in `./out_run/`: `metrics.json` (per-task results), `summary.json` (aggregate pass rates and speedup), and `intermediate/` (per-stage JSONLs, perf scripts, raw logs).
+
+## Quickstart notebook
+
+Run `examples/Examples.ipynb` to verify your environment and understand the full pipeline (**call → exe → perf**) end-to-end.
+
+It demonstrates three submission formats: JSONL, Single, Directory.
 
 
 ## Input format

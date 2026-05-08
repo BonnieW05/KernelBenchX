@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 from multiprocessing import Pool, Lock, Value
 from tqdm import tqdm
@@ -47,7 +48,8 @@ def run_script(args):
         assigned_gpu = str(gpu_id)
 
     results_path = os.environ.get("KERNELBENCHX_RESULTS_PATH", "./results")
-    cmd = f"CUDA_VISIBLE_DEVICES={assigned_gpu} KERNELBENCHX_RESULTS_PATH={results_path} python {script}"
+    py = sys.executable
+    cmd = f"CUDA_VISIBLE_DEVICES={assigned_gpu} KERNELBENCHX_RESULTS_PATH={results_path} {py} {script}"
 
     timed_out = False
     return_code = None
