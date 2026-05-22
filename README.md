@@ -103,7 +103,7 @@ KernelBench_X/
 **If you use this code or find our work valuable, please cite:**
 ```
 @article{wang2026kernelbenchx,
-  title={KernelBench-X: A Comprehensive Benchmark for Evaluating LLM-Generated GPU Kernels}, 
+  title={KernelBenchX: A Comprehensive Benchmark for Evaluating LLM-Generated GPU Kernels}, 
   author={Wang, Han and Zhang, Jintao and Jiang, Kai and Wang, Haoxu and Chen, Jianfei and Zhu, Jun},
   journal={arXiv preprint arXiv:2605.04956},
   year={2026}
