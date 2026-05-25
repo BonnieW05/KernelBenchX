@@ -9,6 +9,8 @@
 
 **Paper:** https://arxiv.org/pdf/2605.04956
 
+**Hugging Face dataset:** https://huggingface.co/datasets/BonnieWang/KernelBenchX
+
 ## Acknowledgment
 
 KernelBench_X builds upon prior efforts in Triton kernel benchmarking, particularly [TritonBench](https://github.com/thunlp/TritonBench), while introducing:
