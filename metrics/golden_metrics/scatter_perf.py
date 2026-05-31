@@ -23,7 +23,7 @@ class performance_metrics(Performance_Metrics):
         for i in range(8, 14):
             size = 2 ** i
             input_tensor = torch.zeros(size, 128, dtype=self.dtype)
-            index = torch.randint(0, size, (size // 2, 128), dtype=torch.long)
+            index = torch.stack([torch.randperm(size)[: size // 2] for _ in range(128)], dim=1)
             src = torch.randn(size // 2, 128, dtype=self.dtype)
             self.input_tensors.append((input_tensor, 0, index, src))
 
