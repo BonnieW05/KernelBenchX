@@ -11,13 +11,7 @@ def rsqrt(input: torch.Tensor, out: torch.Tensor=None) -> torch.Tensor:
     Returns:
     - torch.Tensor: A tensor with the reciprocal of the square root of each element in the input.
     """
-    if torch.any(input < 0):
-        return torch.full_like(input, float('nan'))
-    result = 1 / torch.sqrt(input)
-    if out is not None:
-        out.copy_(result)
-        return out
-    return result
+    return torch.rsqrt(input, out=out)
 
 ##################################################################################################################################################
 
@@ -42,7 +36,9 @@ def test_rsqrt():
 
     # Test case 3: Contains negative elements
     input3 = torch.tensor([-1.0, 4.0, 9.0], device='cuda')
-    results["test_case_3"] = rsqrt(input3)
+    output3 = rsqrt(input3)
+    results["test_case_3"] = torch.nan_to_num(output3)
+    results["test_case_3_isnan"] = torch.isnan(output3)
 
     # Test case 4: All elements are zero
     input4 = torch.tensor([0.0, 0.0, 0.0], device='cuda')
