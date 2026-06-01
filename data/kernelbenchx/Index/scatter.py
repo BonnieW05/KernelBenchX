@@ -23,7 +23,7 @@ import sys
 import os
 sys.path.append(os.path.abspath("utils"))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../utils")))
-from data_utils import rand_int, rand_tensor
+from data_utils import rand_tensor
 
 def test_scatter():
     results = {}
@@ -50,7 +50,7 @@ def test_scatter():
         outs = []
         for _ in range(3):
             base = rand_tensor((4, 128, 256), dtype=torch.float32, mode=mode, outlier_prob=0.001, outlier_scale=20.0)
-            idx = rand_int((4, 128, 64), low=0, high=256, device="cuda", dtype=torch.int64)
+            idx = torch.argsort(torch.rand(4, 128, 256, device="cuda"), dim=2)[..., :64]
             src = rand_tensor((4, 128, 64), dtype=torch.float32, mode=mode, outlier_prob=0.001, outlier_scale=20.0)
             outs.append(scatter(base, 2, idx, src))
         results[f"test_random_{mode}"] = outs
