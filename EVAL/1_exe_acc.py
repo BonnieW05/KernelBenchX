@@ -1,6 +1,7 @@
 import os
 import argparse
 import json
+import math
 from concurrent.futures import ProcessPoolExecutor
 import re
 import runpy
@@ -119,8 +120,18 @@ def compare_python_files(file1, file2, precision_thresholds_map=None):
             return 1e-5, 1e-5
         return 0.0, 0.0
 
+    def _default_numpy_tol(dtype) -> Tuple[float, float]:
+        import numpy as np
+        dtype = np.dtype(dtype)
+        if dtype == np.dtype(np.float16):
+            return 5e-3, 5e-3
+        if dtype in (np.dtype(np.float32), np.dtype(np.float64)):
+            return 1e-5, 1e-5
+        return 0.0, 0.0
+
     def _compare_values(v1, v2, key_path: str) -> None:
         import torch
+        import numpy as np
         if isinstance(v1, torch.Tensor) and isinstance(v2, torch.Tensor):
             if v1.shape != v2.shape:
                 raise AssertionError(f"shape mismatch at {key_path}: {tuple(v1.shape)} vs {tuple(v2.shape)}")
@@ -139,7 +150,7 @@ def compare_python_files(file1, file2, precision_thresholds_map=None):
             else:
                 rtol, atol = _default_tol(v1.dtype)
                 try:
-                    torch.testing.assert_close(v1, v2, rtol=rtol, atol=atol)
+                    torch.testing.assert_close(v1, v2, rtol=rtol, atol=atol, equal_nan=True)
                 except AssertionError as e:
                     metrics = precision_metric(v1, v2)
                     threshold_info = {"rtol": rtol, "atol": atol, "original_error": str(e)}
@@ -159,6 +170,46 @@ def compare_python_files(file1, file2, precision_thresholds_map=None):
             for k in sorted(k1):
                 _compare_values(v1[k], v2[k], f"{key_path}.{k}")
             return
+
+        if isinstance(v1, np.ndarray) or isinstance(v2, np.ndarray):
+            if not (isinstance(v1, np.ndarray) and isinstance(v2, np.ndarray)):
+                raise AssertionError(f"type mismatch at {key_path}: {type(v1).__name__} vs {type(v2).__name__}")
+            if v1.shape != v2.shape:
+                raise AssertionError(f"shape mismatch at {key_path}: {tuple(v1.shape)} vs {tuple(v2.shape)}")
+            if v1.dtype != v2.dtype:
+                raise AssertionError(f"dtype mismatch at {key_path}: {v1.dtype} vs {v2.dtype}")
+
+            rtol, atol = _default_numpy_tol(v1.dtype)
+            if rtol or atol:
+                try:
+                    np.testing.assert_allclose(v1, v2, rtol=rtol, atol=atol, equal_nan=True)
+                except AssertionError as e:
+                    raise AssertionError(f"ndarray mismatch at {key_path}: {e}") from e
+            elif not np.array_equal(v1, v2, equal_nan=True):
+                raise AssertionError(
+                    f"ndarray mismatch at {key_path}: shape={tuple(v1.shape)} dtype={v1.dtype}"
+                )
+            return
+
+        if isinstance(v1, (int, float, complex, np.number)) or isinstance(v2, (int, float, complex, np.number)):
+            a1 = np.asarray(v1)
+            a2 = np.asarray(v2)
+            if a1.shape == () and a2.shape == () and np.issubdtype(a1.dtype, np.number) and np.issubdtype(a2.dtype, np.number):
+                if (
+                    isinstance(v1, float) and isinstance(v2, float)
+                    and math.isnan(v1) and math.isnan(v2)
+                ):
+                    return
+                result_dtype = np.result_type(a1.dtype, a2.dtype)
+                rtol, atol = _default_numpy_tol(result_dtype)
+                try:
+                    if rtol or atol:
+                        np.testing.assert_allclose(a1, a2, rtol=rtol, atol=atol, equal_nan=True)
+                    elif not np.array_equal(a1, a2, equal_nan=True):
+                        raise AssertionError(f"scalar mismatch at {key_path}: {v1!r} vs {v2!r}")
+                except AssertionError as e:
+                    raise AssertionError(f"scalar mismatch at {key_path}: {e}") from e
+                return
 
         if v1 != v2:
             raise AssertionError(f"value mismatch at {key_path}: {v1!r} vs {v2!r}")
